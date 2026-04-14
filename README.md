@@ -3,7 +3,7 @@
 **Ejercicio doctoral** | Programa de Doctorado en Tecnologias Informaticas  
 Universidad de Malaga  
 **Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial  
-**Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano  
+**Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano   
 
 ---
 
