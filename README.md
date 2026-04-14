@@ -168,11 +168,11 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 
 | Version | Fecha | Cambio principal |
 |---------|-------|-----------------|
-| v4.0 | Ene 2026 | Particion aleatoria, pesos por F1 |
-| v5.0 | Feb 2026 | Particion Dirichlet, heterogeneidad real |
-| v6.0 | Mar 2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
-| v7.1 | Mar 2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
-| v7.2 | Abr 2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
+| v4.0 |  2026 | Particion aleatoria, pesos por F1 |
+| v5.0 |  2026 | Particion Dirichlet, heterogeneidad real |
+| v6.0 |  2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
+| v7.1 |  2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
+| v7.2 |  2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
 
 ---
 
