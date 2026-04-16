@@ -3,7 +3,7 @@
 **Ejercicio doctoral** | Programa de Doctorado en Tecnologias Informaticas  
 Universidad de Malaga  
 **Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial  
-**Directores:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano   
+**Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano  
 
 ---
 
@@ -168,11 +168,11 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 
 | Version | Fecha | Cambio principal |
 |---------|-------|-----------------|
-| v4.0 |  2026 | Particion aleatoria, pesos por F1 |
-| v5.0 |  2026 | Particion Dirichlet, heterogeneidad real |
-| v6.0 |  2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
-| v7.1 |  2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
-| v7.2 |  2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
+| v4.0 | Ene 2026 | Particion aleatoria, pesos por F1 |
+| v5.0 | Feb 2026 | Particion Dirichlet, heterogeneidad real |
+| v6.0 | Mar 2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
+| v7.1 | Mar 2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
+| v7.2 | Abr 2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
 
 ---
 
@@ -180,6 +180,6 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 
 | Codigo | Descripcion | Enlace |
 |--------|-------------|--------|
-| EJD-UMA-001 | Fed-TRUST: Random Forest Federado con Coeficiente de Veracidad Vi | [RF_Federado_Ejercicio_Doctoral_UMA_v8](https://github.com/edgarherrera/RF_Federado_Ejercicio_Doctoral_UMA_v8) |
+| EJD-UMA-001 | Fed-TRUST: Random Forest Federado con Coeficiente de Veracidad Vi | [RF_Federado_Ejercicio_Doctoral_UMA_v8](https://github.com/eoherrera/RF_Federado_Ejercicio_Doctoral_UMA_v8) |
 | EJD-UMA-002 | Tree Edit Distance + MDS para comparacion de estructuras | Disponible en GitHub |
 | EJD-UMA-003 | Este ejercicio | Repositorio actual |
