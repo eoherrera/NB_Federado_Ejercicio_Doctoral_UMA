@@ -2,7 +2,7 @@
 
 **Ejercicio doctoral** | Programa de Doctorado en Tecnologias Informaticas  
 Universidad de Malaga  
-**Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial  
+**Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial, VIU España  
 **Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano  
 
 ---
@@ -88,7 +88,7 @@ La funcion objetivo minimiza `(1 - F1_macro_validacion) + regularizacion_L2`. La
 
 F1-macro varia entre 0.14 y 0.47. Las diferencias son visibles pero no tienen suficiente separacion estadistica para discriminar entre modelos en un dataset de laboratorio. Este es el techo de F1 que el Prof. Lopez Rubio identifico.
 
-### Evaluacion OOD (KDDTest+21  - ataques no vistos en entrenamiento)
+### Evaluacion OOD (KDDTest+21 - ataques no vistos en entrenamiento)
 
 | Alpha | JS | Aprendida | Baseline | Delta | Direccion |
 |-------|----|-----------|----------|-------|-----------|
@@ -100,26 +100,24 @@ F1-macro varia entre 0.14 y 0.47. Las diferencias son visibles pero no tienen su
 
 ### Test McNemar (significancia estadistica)
 
-Todos los resultados son estadisticamente significativos (p=0.0000). La diferencia en alpha=0.1 no es ruido  - chi2=3630, lo que equivale a decir que la probabilidad de observar esta diferencia por azar es practicamente cero.
+Todos los resultados son estadisticamente significativos (p=0.0000). La diferencia en alpha=0.1 no es ruido - chi2=3630, lo que equivale a decir que la probabilidad de observar esta diferencia por azar es practicamente cero.
 
 ---
 
 ## Figuras generadas
 
-**Figura 1**  - F1-macro por nivel de heterogeneidad (evaluacion interna KDDTrain+)  
+**Figura 1** - F1-macro por nivel de heterogeneidad (evaluacion interna KDDTrain+)  
 Muestra que en condiciones de laboratorio las diferencias entre modelos son visibles pero no suficientes para discriminar estadisticamente.
 
-**Figura 2**  - F1-macro OOD y estadistico McNemar  
+**Figura 2** - F1-macro OOD y estadistico McNemar  
 Muestra donde la Mezcla Aprendida supera al Baseline (alta heterogeneidad) y donde no (heterogeneidad moderada/baja). El panel derecho presenta el chi2 de McNemar por nivel de alpha.
 
-**Figura 3**  - ICC (variables CRISC) vs pesos aprendidos  
+**Figura 3** - ICC (variables CRISC) vs pesos aprendidos  
 Muestra la correlacion entre el indice de confianza institucional de cada nodo y el peso que el algoritmo le asigno. El nodo Gobierno, con ICC mas bajo, recibio consistentemente el menor peso.
 
 ---
 
 ## PROTOCOLO-STRESS · Resumen de verificaciones
-
-Este ejercicio incluye una seccion de verificacion sistematica antes y despues del experimento, que responde directamente la pregunta del Prof. Lopez Rubio sobre suficiencia y variabilidad del dataset.
 
 | Verificacion | Resultado |
 |-------------|-----------|
@@ -132,18 +130,18 @@ Este ejercicio incluye una seccion de verificacion sistematica antes y despues d
 | F1 OOD por encima del azar | OK |
 | McNemar significativo | OK |
 | Direccion OOD alpha=0.1 | OK |
-| Direccion OOD alpha=0.3 y 1.0 | ADVERTENCIA  - limitacion declarada |
+| Direccion OOD alpha=0.3 y 1.0 | ADVERTENCIA - limitacion declarada |
 | Prueba acida nodo con clase ausente | OK |
 
 ---
 
 ## Limitaciones declaradas
 
-**Limitacion 1  - Dataset:** NSL-KDD es un dataset de laboratorio creado en 2009. Los patrones de ataque estan bien definidos y los modelos los aprenden con facilidad. En un entorno real con trafico actual, los resultados serian distintos.
+**Limitacion 1 - Dataset:** NSL-KDD es un dataset de laboratorio creado en 2009. Los patrones de ataque estan bien definidos y los modelos los aprenden con facilidad. En un entorno real con trafico actual, los resultados serian distintos.
 
-**Limitacion 2  - Pesos en heterogeneidad baja:** Cuando los nodos son similares (alpha=0.3 y 1.0), el optimizador concentra el peso en un nodo y pierde la diversidad que beneficia la generalizacion OOD. La Mezcla Aprendida pierde contra el Baseline en esas condiciones. Esta limitacion es la linea de trabajo del siguiente ejercicio.
+**Limitacion 2 - Pesos en heterogeneidad baja:** Cuando los nodos son similares (alpha=0.3 y 1.0), el optimizador concentra el peso en un nodo y pierde la diversidad que beneficia la generalizacion OOD. La Mezcla Aprendida pierde contra el Baseline en esas condiciones. Esta limitacion es la linea de trabajo del siguiente ejercicio.
 
-**Limitacion 3  - Variables CRISC estaticas:** Los valores de CMM, KCI, KRI y CVSS se definen al inicio y no cambian durante el experimento. En una implementacion real estos valores variarian segun los incidentes de cada nodo en cada ronda de entrenamiento.
+**Limitacion 3 - Variables CRISC estaticas:** Los valores de CMM, KCI, KRI y CVSS se definen al inicio y no cambian durante el experimento. En una implementacion real estos valores variarian segun los incidentes de cada nodo en cada ronda de entrenamiento.
 
 ---
 
@@ -168,9 +166,9 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 
 | Version | Fecha | Cambio principal |
 |---------|-------|-----------------|
-| v4.0 | Ene 2026 | Particion aleatoria, pesos por F1 |
-| v5.0 | Feb 2026 | Particion Dirichlet, heterogeneidad real |
-| v6.0 | Mar 2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
+| v4.0 | 2026 | Particion aleatoria, pesos por F1 |
+| v5.0 | 2026 | Particion Dirichlet, heterogeneidad real |
+| v6.0 | 2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
 | v7.1 | Mar 2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
 | v7.2 | Abr 2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
 
@@ -181,5 +179,5 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 | Codigo | Descripcion | Enlace |
 |--------|-------------|--------|
 | EJD-UMA-001 | Fed-TRUST: Random Forest Federado con Coeficiente de Veracidad Vi | [RF_Federado_Ejercicio_Doctoral_UMA_v8](https://github.com/eoherrera/RF_Federado_Ejercicio_Doctoral_UMA_v8) |
-| EJD-UMA-002 | Tree Edit Distance + MDS para comparacion de estructuras | Disponible en GitHub |
+| EJD-UMA-002 | Tree Edit Distance + MDS para comparacion de estructuras sobre arboles federados | [TED_MDS_Ejercicio_Doctoral_UMA](https://github.com/eoherrera/TED_MDS_Ejercicio_Doctoral_UMA) |
 | EJD-UMA-003 | Este ejercicio | Repositorio actual |
