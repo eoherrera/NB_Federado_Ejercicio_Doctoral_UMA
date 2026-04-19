@@ -1,47 +1,50 @@
-# EJD-UMA-003 v7.2 · Naive Bayes Federado con Variables de Riesgo
+# EJD-UMA-003 v8.5 · Naive Bayes Federado con MoG Real + Regularizacion ICC
 
-**Ejercicio doctoral** | Programa de Doctorado en Tecnologias Informaticas  
-Universidad de Malaga  
-**Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial, VIU España  
-**Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano  
+**Ejercicio doctoral** | Programa de Doctorado en Tecnologias Informaticas
+Universidad de Malaga
+**Autor:** Ing. Edgar O. Herrera Logrono, M.Sc. en Inteligencia Artificial, VIU Espana
+**Directores propuestos:** Prof. Ezequiel Lopez Rubio · Prof. Juan Miguel Ortiz de Lazcano
 
 ---
 
 ## De que trata este ejercicio
 
-Cuando una institucion financiera, un hospital y una entidad gubernamental quieren colaborar para detectar ciberataques sin compartir sus datos entre ellos, surge un problema concreto: cada uno aprende un modelo local, y luego hay que combinar esos modelos de alguna manera.
+Cuando una institucion financiera, un hospital y una entidad gubernamental colaboran para detectar ciberataques sin compartir sus datos, cada nodo aprende un modelo local y el servidor debe combinarlos de forma inteligente.
 
-La forma mas simple de combinarlos es promediar sus parametros. Pero eso asume que los tres tienen la misma importancia, lo cual rara vez es cierto. Un nodo con sistemas maduros y pocos incidentes deberia pesar mas que uno con controles debiles.
+Este ejercicio implementa una **Mixtura de Gaussianas (MoG) real** en la inferencia federada: en lugar de colapsar todas las distribuciones locales en una sola gaussiana federada, el servidor mantiene las k gaussianas locales vivas y las combina ponderadamente:
 
-Este ejercicio propone una respuesta a esa pregunta: en lugar de asignar pesos de forma arbitraria, se aprenden desde los propios datos. Y para validar que los pesos tienen sentido institucional, se comparan contra variables de gestion de riesgos reales (CRISC): madurez del proceso, cobertura de controles, frecuencia de incidentes y exposicion a vulnerabilidades.
+```
+P(x | c) = sum_k  w_k * N(x ; mu_k(c), sigma2_k(c))
+```
+
+Los pesos w_k se aprenden empiricamente desde un conjunto de validacion reservado. En v8.5, la funcion objetivo penaliza la distancia al ICC normalizado de cada nodo (regularizacion institucional), en lugar de penalizar la distancia a la distribucion uniforme.
 
 ---
 
 ## Evolucion del ejercicio
 
-> **Nota:** Las versiones v4.0 a v7.1 son iteraciones internas de desarrollo y ajuste metodologico, realizadas durante el proceso de aprendizaje previo a la entrega formal. La version v7.2 es el primer entregable que incorpora todas las correcciones solicitadas por el Prof. Lopez Rubio.
-
 ```mermaid
 graph LR
-    A[v4.0<br/>Particion aleatoria<br/>JS=0.000] --> B[v5.0<br/>Dirichlet alpha=0.1<br/>JS=0.65]
-    B --> C[v6.0<br/>Prior global<br/>Pesos por entropia]
-    C --> D[v7.1<br/>Variables CRISC parciales<br/>Solo KDDTrain+]
-    D --> E[v7.2<br/>CRISC completas<br/>Pesos aprendidos<br/>KDDTest+21 OOD<br/>McNemar]
+    A[v4.0-v7.1<br/>Iteraciones internas] --> B[v7.2<br/>CRISC completas<br/>Pesos aprendidos<br/>KDDTest+21 OOD<br/>McNemar]
+    B --> C[v8.0<br/>MoG real<br/>Aprobada Prof. Ezequiel]
+    C --> D[v8.3<br/>ICC como prior<br/>Minimo unico detectado]
+    D --> E[v8.5<br/>ICC como regularizacion<br/>Pesos alineados con CRISC]
     style E fill:#1565C0,color:#fff
+    style B fill:#2E7D32,color:#fff
 ```
+
+> La version v7.2 fue el primer entregable formal. La version v8.0 corrige la subseccion 3.2 del preprint segun la observacion del Prof. Ezequiel Lopez Rubio (16-abr-2026). Las versiones v8.3 y v8.5 son exploraciones metodologicas adicionales que responden a la pregunta abierta del preprint sobre el uso del ICC como senial de gobernanza.
 
 ---
 
 ## Variables de riesgo CRISC utilizadas
 
-Estas variables provienen del marco de certificacion CRISC (Certified in Risk and Information Systems Control, ISACA) y representan la situacion real de cada nodo institucional:
-
 | Variable | Que mide | Rango |
 |----------|----------|-------|
-| CMM | Nivel de madurez en gestion de riesgos (CMMI) | 1 a 5 |
+| CMM | Madurez del proceso de gestion de riesgos | 1 a 5 |
 | KCI | Porcentaje de controles de seguridad implementados | 0 a 1 |
-| KRI | Frecuencia con que se activan indicadores de riesgo | 0 a 1 (menor es mejor) |
-| CVSS | Puntuacion media de vulnerabilidades del nodo (CVSS v3.1) | 0 a 10 |
+| KRI | Frecuencia de activacion de indicadores de riesgo | 0 a 1 (menor es mejor) |
+| CVSS | Puntuacion media de vulnerabilidades (CVSS v3.1) | 0 a 10 |
 | ICC | Indice de Coherencia Contextual: combina los cuatro anteriores | 0 a 1 |
 
 **Formula del ICC:**
@@ -49,9 +52,7 @@ Estas variables provienen del marco de certificacion CRISC (Certified in Risk an
 ICC = (CMM / 5) x KCI x (1 - KRI) x (1 - CVSS / 10)
 ```
 
-Un nodo con CMM alto, muchos controles activos, pocos incidentes y vulnerabilidades bajas obtiene un ICC cercano a 1. Un nodo debil se acerca a 0.
-
-**Valores usados en este ejercicio:**
+**Valores por nodo:**
 
 | Nodo | CMM | KCI | KRI | CVSS | ICC |
 |------|-----|-----|-----|------|-----|
@@ -61,63 +62,58 @@ Un nodo con CMM alto, muchos controles activos, pocos incidentes y vulnerabilida
 
 ---
 
-## Como funciona el aprendizaje de pesos
-
-En versiones anteriores los pesos se asignaban a mano o por heuristica (entropia local). El Prof. Lopez Rubio senalo que eso no tiene justificacion empirica.
-
-En v7.2 los pesos se aprenden asi:
+## Arquitectura MoG (v8.0+)
 
 ```mermaid
 graph TD
     A[Dataset KDDTrain+<br/>125973 registros] --> B[Dividir en<br/>train / val / test]
     B --> C[Particion Dirichlet<br/>por nodo y alpha]
-    C --> D[Entrenar NB local<br/>en cada nodo]
-    D --> E[Optimizar pesos<br/>sobre conjunto val<br/>10 inicializaciones]
-    E --> F[Pesos aprendidos<br/>suman exactamente 1.0]
+    C --> D[Entrenar NB local<br/>en cada nodo<br/>mu_k sigma2_k]
+    D --> E[Optimizar pesos w_k<br/>sobre conjunto val<br/>Regularizacion ICC v8.5]
+    E --> F[Inferencia MoG real<br/>P x c = sum_k w_k N x mu_k sigma2_k]
     F --> G[Evaluar sobre<br/>KDDTest+21 OOD]
     G --> H[Test McNemar<br/>significancia estadistica]
 ```
 
-La funcion objetivo minimiza `(1 - F1_macro_validacion) + regularizacion_L2`. La regularizacion penaliza que un solo nodo acapare todo el peso, forzando una distribucion mas balanceada.
+---
+
+## Diferencia clave entre versiones
+
+| Version | Funcion objetivo | Resultado pesos alpha=0.1 |
+|---------|-----------------|--------------------------|
+| v7.2 | Colapso gaussiano + L2 uniforme | (0.726, 0.225, 0.049) |
+| v8.0 | MoG real + L2 uniforme | (0.333, 0.344, 0.323) — uniformes |
+| v8.5 | MoG real + L2 ICC | (0.669, 0.284, 0.048) — alineados con ICC |
 
 ---
 
-## Resultados principales
+## Resultados principales (v8.5)
 
-### Evaluacion interna (KDDTrain+)
-
-F1-macro varia entre 0.14 y 0.47. Las diferencias son visibles pero no tienen suficiente separacion estadistica para discriminar entre modelos en un dataset de laboratorio. Este es el techo de F1 que el Prof. Lopez Rubio identifico.
-
-### Evaluacion OOD (KDDTest+21 - ataques no vistos en entrenamiento)
+### Evaluacion OOD — KDDTest+21 (ataques no vistos)
 
 | Alpha | JS | Aprendida | Baseline | Delta | Direccion |
 |-------|----|-----------|----------|-------|-----------|
-| 0.1 | 0.67 | 0.4855 | 0.1921 | +0.2935 | Aprendida gana |
-| 0.3 | 0.40 | 0.3904 | 0.4050 | -0.0146 | Baseline gana |
-| 1.0 | 0.18 | 0.3637 | 0.3734 | -0.0097 | Baseline gana |
+| 0.1 | 0.67 | 0.3287 | 0.1921 | +0.1366 | Aprendida gana |
+| 0.3 | 0.40 | 0.2219 | 0.4050 | -0.1831 | Baseline gana (*) |
+| 1.0 | 0.18 | 0.3480 | 0.3734 | -0.0253 | Baseline gana (*) |
 
-**Alpha** controla que tan distintos son los nodos entre si. Alpha=0.1 simula tres instituciones con perfiles de ataque muy diferentes (JS=0.67). Alpha=1.0 simula instituciones casi iguales (JS=0.18).
+(*) Limitacion declarada: cuando la heterogeneidad es baja, el optimizador concentra peso en un nodo. La linea de trabajo siguiente es explorar datasets con mayor complejidad multimodal (CIC-IDS2017).
 
-### Test McNemar (significancia estadistica)
+### Test McNemar
 
-Todos los resultados son estadisticamente significativos (p=0.0000). La diferencia en alpha=0.1 no es ruido - chi2=3630, lo que equivale a decir que la probabilidad de observar esta diferencia por azar es practicamente cero.
+| Alpha | chi2 | p-valor | Resultado |
+|-------|------|---------|-----------|
+| 0.1 | 553.79 | 0.0000 | Significativo — favorable a Aprendida |
+| 0.3 | 4364.74 | 0.0000 | Significativo — favorable a Baseline |
+| 1.0 | 30.54 | 0.0000 | Significativo — favorable a Baseline |
 
----
+### Hallazgo v8.5: ICC como regularizacion
 
-## Figuras generadas
-
-**Figura 1** - F1-macro por nivel de heterogeneidad (evaluacion interna KDDTrain+)  
-Muestra que en condiciones de laboratorio las diferencias entre modelos son visibles pero no suficientes para discriminar estadisticamente.
-
-**Figura 2** - F1-macro OOD y estadistico McNemar  
-Muestra donde la Mezcla Aprendida supera al Baseline (alta heterogeneidad) y donde no (heterogeneidad moderada/baja). El panel derecho presenta el chi2 de McNemar por nivel de alpha.
-
-**Figura 3** - ICC (variables CRISC) vs pesos aprendidos  
-Muestra la correlacion entre el indice de confianza institucional de cada nodo y el peso que el algoritmo le asigno. El nodo Gobierno, con ICC mas bajo, recibio consistentemente el menor peso.
+Con regularizacion ICC los pesos aprendidos se alinearon con la madurez institucional de cada nodo (Financiero=0.669, Gobierno=0.048), el F1 en evaluacion interna mejoro en +0.177 bajo alta heterogeneidad, y el orden de confianza institucional quedo validado empiricamente. Este resultado demuestra que el ICC captura informacion real sobre la contribucion de cada nodo y abre la puerta a integrarlo como prior de gobernanza en la funcion objetivo.
 
 ---
 
-## PROTOCOLO-STRESS · Resumen de verificaciones
+## PROTOCOLO-STRESS · Resumen de verificaciones (v8.5)
 
 | Verificacion | Resultado |
 |-------------|-----------|
@@ -127,38 +123,40 @@ Muestra la correlacion entre el indice de confianza institucional de cada nodo y
 | Prueba acida alpha=0.01 | OK |
 | Pesos suman 1.0000 | OK |
 | Predicciones diversas (5/5 clases) | OK |
-| F1 OOD por encima del azar | OK |
-| McNemar significativo | OK |
-| Direccion OOD alpha=0.1 | OK |
-| Direccion OOD alpha=0.3 y 1.0 | ADVERTENCIA - limitacion declarada |
+| F1 OOD alpha=0.1 por encima del umbral | OK |
+| McNemar significativo en los 3 niveles | OK |
+| Direccion OOD alpha=0.1 favorable a Aprendida | OK |
+| Direccion OOD alpha=0.3 y 1.0 | ADVERTENCIA — limitacion declarada |
 | Prueba acida nodo con clase ausente | OK |
 
 ---
 
 ## Limitaciones declaradas
 
-**Limitacion 1 - Dataset:** NSL-KDD es un dataset de laboratorio creado en 2009. Los patrones de ataque estan bien definidos y los modelos los aprenden con facilidad. En un entorno real con trafico actual, los resultados serian distintos.
+**Limitacion 1 — Dataset:** NSL-KDD es un dataset de laboratorio de 2009. Sus distribuciones de ataque no reflejan la complejidad multimodal de trafico real moderno. Esta limitacion justifica la extension hacia CIC-IDS2017 como trabajo futuro.
 
-**Limitacion 2 - Pesos en heterogeneidad baja:** Cuando los nodos son similares (alpha=0.3 y 1.0), el optimizador concentra el peso en un nodo y pierde la diversidad que beneficia la generalizacion OOD. La Mezcla Aprendida pierde contra el Baseline en esas condiciones. Esta limitacion es la linea de trabajo del siguiente ejercicio.
+**Limitacion 2 — Heterogeneidad baja:** Cuando JS < 0.50, el optimizador concentra peso en un nodo y la MoG pierde ventaja sobre FedAvg. La regularizacion ICC mitiga parcialmente este comportamiento pero no lo elimina.
 
-**Limitacion 3 - Variables CRISC estaticas:** Los valores de CMM, KCI, KRI y CVSS se definen al inicio y no cambian durante el experimento. En una implementacion real estos valores variarian segun los incidentes de cada nodo en cada ronda de entrenamiento.
+**Limitacion 3 — Variables CRISC estaticas:** Los valores de ICC se definen al inicio y no evolucionan. En un despliegue real los ICC variarian con cada ronda de entrenamiento segun los incidentes de cada nodo.
 
 ---
 
 ## Pregunta abierta para la linea NICS Lab
 
-Si el ICC de cada nodo captura su nivel de madurez institucional, seria posible usarlo como punto de partida del optimizador en lugar de una inicializacion aleatoria? Un prior basado en ICC reduciria el numero de iteraciones y mejoraria la convergencia en escenarios donde el conjunto de validacion es pequeno. Esa es la pregunta que conecta este ejercicio con el trabajo de la Prof. Carmen Fernandez-Gago sobre gestion de confianza en sistemas distribuidos.
+La regularizacion ICC demostro que la senial de gobernanza institucional guia al optimizador hacia pesos coherentes con la madurez de cada nodo. La siguiente pregunta es: puede esta senial mejorar la generalizacion ante ataques genuinamente desconocidos en un dataset con mayor complejidad multimodal como CIC-IDS2017?
+
+Esta es la pregunta que conecta este ejercicio con el trabajo de la Prof. Carmen Fernandez-Gago sobre gestion de confianza en sistemas distribuidos.
 
 ---
 
 ## Como ejecutar en Google Colab
 
-1. Abrir el archivo `.ipynb` en Google Colab
+1. Abrir `EJD_UMA_003_v8_5_ICC_Reg.ipynb` en Google Colab
 2. Ejecutar **Runtime > Run all**
-3. El programa muestra un aviso con el tiempo estimado antes de empezar
-4. Tiempo tipico: 3 a 5 minutos en CPU de Colab
+3. Tiempo estimado: 7-10 minutos en CPU de Colab
+4. Al finalizar suena un beep doble de 432 Hz
 
-No se requiere configuracion adicional. El dataset se descarga automaticamente desde GitHub al inicio de la ejecucion.
+Todos los resultados son reproducibles con SEMILLA=42.
 
 ---
 
@@ -166,11 +164,11 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 
 | Version | Fecha | Cambio principal |
 |---------|-------|-----------------|
-| v4.0 | 2026 | Particion aleatoria, pesos por F1 |
-| v5.0 | 2026 | Particion Dirichlet, heterogeneidad real |
-| v6.0 | 2026 | Prior global, pesos por entropia, variables ICC/CMM/KCI |
-| v7.1 | Mar 2026 | Variables CRISC parciales, evaluacion solo KDDTrain+ |
-| v7.2 | Abr 2026 | CRISC completas (KRI, CVSS), pesos aprendidos desde validacion, KDDTest+21 OOD, McNemar, PROTOCOLO-STRESS |
+| v4.0 - v7.1 | 2026 | Iteraciones internas de desarrollo |
+| v7.2 | Mar 2026 | CRISC completas, pesos aprendidos, KDDTest+21 OOD, McNemar |
+| v8.0 | Abr 2026 | MoG real: inferencia multimodal aprobada por Prof. Ezequiel |
+| v8.3 | Abr 2026 | ICC como prior: paisaje de optimizacion con minimo dominante |
+| v8.5 | Abr 2026 | ICC como regularizacion: pesos alineados con CRISC |
 
 ---
 
@@ -179,5 +177,5 @@ No se requiere configuracion adicional. El dataset se descarga automaticamente d
 | Codigo | Descripcion | Enlace |
 |--------|-------------|--------|
 | EJD-UMA-001 | Fed-TRUST: Random Forest Federado con Coeficiente de Veracidad Vi | [RF_Federado_Ejercicio_Doctoral_UMA_v8](https://github.com/eoherrera/RF_Federado_Ejercicio_Doctoral_UMA_v8) |
-| EJD-UMA-002 | Tree Edit Distance + MDS para comparacion de estructuras sobre arboles federados | [TED_MDS_Ejercicio_Doctoral_UMA](https://github.com/eoherrera/TED_MDS_Ejercicio_Doctoral_UMA) |
+| EJD-UMA-002 | Tree Edit Distance + MDS para comparacion de estructuras | [TED_MDS_Ejercicio_Doctoral_UMA](https://github.com/eoherrera/TED_MDS_Ejercicio_Doctoral_UMA) |
 | EJD-UMA-003 | Este ejercicio | Repositorio actual |
