@@ -126,7 +126,7 @@ La verificación confirma que OrdinalEncoder funciona correctamente en NSL-KDD. 
 
 ## Cómo ejecutar en Google Colab
 
-1. Abrir `EJD_UMA_003_v8_6_Hibrido.ipynb` en Google Colab
+1. Abrir `EJD_UMA_003_v8_8.ipynb` en Google Colab
 2. Ejecutar **Runtime > Run all**
 3. Tiempo estimado: 30-40 minutos en CPU de Colab
 4. Al finalizar suena un beep doble de 432 Hz
